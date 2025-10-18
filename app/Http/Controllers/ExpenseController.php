@@ -15,10 +15,12 @@ class ExpenseController extends Controller
 
     public function index(Request $request): View
     {
+        $tenantId = (int) $request->user()->tenant_id;
         $selectedPeriod = $this->resolvePeriod($request->query('period', 'month'));
         $periodStart = $this->periodStart($selectedPeriod);
 
         $expenses = Expense::query()
+            ->where('tenant_id', $tenantId)
             ->where('created_at', '>=', $periodStart)
             ->orderByDesc('created_at')
             ->get();
@@ -27,9 +29,9 @@ class ExpenseController extends Controller
         $totalForSelectedPeriod = $expenses->sum('amount');
 
         $totals = [
-            'day' => $this->sumForPeriod('day'),
-            'week' => $this->sumForPeriod('week'),
-            'month' => $this->sumForPeriod('month'),
+            'day' => $this->sumForPeriod('day', $tenantId),
+            'week' => $this->sumForPeriod('week', $tenantId),
+            'month' => $this->sumForPeriod('month', $tenantId),
         ];
 
         return view('expenses.index', [
@@ -58,6 +60,7 @@ class ExpenseController extends Controller
         ]);
 
         Expense::create([
+            'tenant_id' => $request->user()->tenant_id,
             'description' => $data['description'] ?? null,
             'type' => $data['type'],
             'amount' => $data['amount'],
@@ -84,11 +87,14 @@ class ExpenseController extends Controller
         };
     }
 
-    private function sumForPeriod(string $period): float
+    private function sumForPeriod(string $period, int $tenantId): float
     {
         $start = $this->periodStart($period);
 
-        return (float) Expense::where('created_at', '>=', $start)->sum('amount');
+        return (float) Expense::query()
+            ->where('tenant_id', $tenantId)
+            ->where('created_at', '>=', $start)
+            ->sum('amount');
     }
 
     private function groupByType(Collection $expenses): array
@@ -106,4 +112,3 @@ class ExpenseController extends Controller
         return $breakdown;
     }
 }
-

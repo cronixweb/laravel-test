@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Expense;
+use App\Models\Tenant;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,6 +15,10 @@ class ExpenseTest extends TestCase
 
     public function test_it_creates_an_expense(): void
     {
+        $user = User::factory()->admin()->create();
+
+        $this->actingAs($user);
+
         $response = $this->post(route('expenses.store'), [
             'description' => 'Lunch with team',
             'type' => 'personal',
@@ -26,6 +32,7 @@ class ExpenseTest extends TestCase
         $this->assertDatabaseHas('expenses', [
             'description' => 'Lunch with team',
             'type' => 'personal',
+            'tenant_id' => $user->tenant_id,
         ]);
 
         $expense = Expense::first();
@@ -38,24 +45,38 @@ class ExpenseTest extends TestCase
     {
         Carbon::setTestNow(Carbon::parse('2024-01-15 12:00:00'));
 
-        Expense::create([
+        $tenant = Tenant::factory()->create();
+        $user = User::factory()->for($tenant)->admin()->create();
+        $this->actingAs($user);
+
+        Expense::factory()->for($tenant)->create([
             'description' => 'Daily commute',
             'type' => Expense::TYPE_PERSONAL,
             'amount' => 100,
+            'created_at' => Carbon::now(),
         ]);
 
         Carbon::setTestNow(Carbon::parse('2024-01-10 09:00:00'));
-        Expense::create([
+        Expense::factory()->for($tenant)->create([
             'description' => 'Office supplies',
             'type' => Expense::TYPE_WORK,
             'amount' => 200,
+            'created_at' => Carbon::now(),
         ]);
 
         Carbon::setTestNow(Carbon::parse('2023-12-20 18:30:00'));
-        Expense::create([
+        Expense::factory()->for($tenant)->create([
             'description' => 'Home repairs',
             'type' => Expense::TYPE_HOUSE,
             'amount' => 300,
+            'created_at' => Carbon::now(),
+        ]);
+
+        // Another tenant's expense should not surface in totals.
+        Expense::factory()->create([
+            'type' => Expense::TYPE_WORK,
+            'amount' => 999,
+            'created_at' => Carbon::parse('2024-01-12 10:00:00'),
         ]);
 
         Carbon::setTestNow(Carbon::parse('2024-01-15 12:00:00'));
@@ -78,4 +99,3 @@ class ExpenseTest extends TestCase
         Carbon::setTestNow();
     }
 }
-

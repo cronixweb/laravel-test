@@ -41,6 +41,22 @@
         header nav a:hover {
             color: #94a3b8;
         }
+        header nav form {
+            display: inline;
+            margin-left: 1rem;
+        }
+        header nav .link-button {
+            background: none;
+            border: none;
+            color: #e2e8f0;
+            font: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0;
+        }
+        header nav .link-button:hover {
+            color: #94a3b8;
+        }
         main {
             max-width: 960px;
             margin: 1.5rem auto 3rem;
@@ -89,9 +105,19 @@
 <header>
     <div class="container">
         <div>Expense Calculator</div>
-        <nav>
-            <a href="{{ route('expenses.index') }}">Overview</a>
-            <a href="{{ route('expenses.create') }}">Quick Add</a>
+        <nav style="display:flex; align-items:center; gap:1rem;">
+            @auth
+                <span style="font-size:0.9rem; color:#94a3b8;">Tenant: {{ $tenant->name ?? auth()->user()->tenant?->name }}</span>
+                <a href="{{ route('dashboard') }}">Overview</a>
+                <a href="{{ route('expenses.create') }}">Quick Add</a>
+                <form method="post" action="{{ route('logout') }}" style="margin:0;">
+                    @csrf
+                    <button type="submit" class="link-button">Logout</button>
+                </form>
+            @else
+                <a href="{{ route('login') }}">Login</a>
+                <a href="{{ route('signup') }}">Sign up</a>
+            @endauth
         </nav>
     </div>
 </header>
