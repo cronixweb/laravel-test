@@ -70,20 +70,20 @@
                     <option value="{{ $period }}" @selected($period === $selectedPeriod)>{{ ucfirst($period) }}</option>
                 @endforeach
             </select>
-            <span style="color:#64748b;">Total: <strong>₹{{ number_format($totalForSelectedPeriod, 2) }}</strong></span>
+            <span style="color:#64748b;">Total: <strong>INR {{ number_format($totalForSelectedPeriod, 2) }}</strong></span>
         </form>
         <div class="grid cols-3" style="margin-bottom: 1.5rem;">
             <div class="metric">
                 <span>Today</span>
-                <strong>₹{{ number_format($totals['day'], 2) }}</strong>
+                <strong>INR {{ number_format($totals['day'], 2) }}</strong>
             </div>
             <div class="metric">
                 <span>This Week</span>
-                <strong>₹{{ number_format($totals['week'], 2) }}</strong>
+                <strong>INR {{ number_format($totals['week'], 2) }}</strong>
             </div>
             <div class="metric">
                 <span>This Month</span>
-                <strong>₹{{ number_format($totals['month'], 2) }}</strong>
+                <strong>INR {{ number_format($totals['month'], 2) }}</strong>
             </div>
         </div>
         <div>
@@ -113,7 +113,7 @@
                     <tr>
                         <td>{{ $expense->description ?? '—' }}</td>
                         <td>{{ ucfirst($expense->type) }}</td>
-                        <td>₹{{ number_format((float) $expense->amount, 2) }}</td>
+                        <td>INR {{ number_format((float) $expense->amount, 2) }}</td>
                         <td>{{ $expense->created_at->format('d M Y, h:i A') }}</td>
                     </tr>
                 @endforeach
@@ -151,7 +151,7 @@
                             callbacks: {
                                 label: context => {
                                     const value = context.parsed || 0;
-                                    return `${context.label}: ₹${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                                    return `${context.label}: INR ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                                 }
                             }
                         }
