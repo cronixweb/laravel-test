@@ -58,6 +58,17 @@
         table tbody tr:nth-child(even) {
             background: #f8fafc;
         }
+        .add-expense-button {
+            background: #761F17;
+            gap: 0.5rem;
+        }
+        .add-expense-button:hover {
+            background: #5d1710;
+        }
+        .add-expense-button svg {
+            width: 1rem;
+            height: 1rem;
+        }
     </style>
 @endpush
 
@@ -94,7 +105,12 @@
     <div class="card">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 1rem;">
             <h2 style="margin:0; font-size:1.1rem;">Recent expenses</h2>
-            <a class="button" href="{{ route('expenses.create') }}">Add expense</a>
+            <a class="button add-expense-button" href="{{ route('expenses.create') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span>Add expense</span>
+            </a>
         </div>
         @if ($expenses->isEmpty())
             <p style="margin:0;">No expenses recorded for the selected period yet.</p>
