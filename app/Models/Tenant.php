@@ -16,12 +16,21 @@ class Tenant extends Model
         'settings',
         'is_active',
         'trial_ends_at',
+        'database_host',
+        'database_port',
+        'database_username',
+        'database_password',
     ];
 
     protected $casts = [
         'settings' => 'array',
         'is_active' => 'boolean',
         'trial_ends_at' => 'datetime',
+        'database_port' => 'integer',
+    ];
+
+    protected $hidden = [
+        'database_password',
     ];
 
     /**
@@ -39,11 +48,52 @@ class Tenant extends Model
     }
 
     /**
-     * Get the users for the tenant.
+     * Get the database name for this tenant.
      */
-    public function users(): HasMany
+    public function getDatabaseName(): string
     {
-        return $this->hasMany(User::class);
+        $prefix = config('database.tenant_db_prefix', 'tenant_');
+        return $prefix . $this->slug;
+    }
+
+    /**
+     * Get the connection name for this tenant.
+     */
+    public function getConnectionName(): string
+    {
+        return "tenant_{$this->id}";
+    }
+
+    /**
+     * Check if tenant database exists.
+     */
+    public function databaseExists(): bool
+    {
+        return app(\App\Services\TenantDatabaseManager::class)->tenantDatabaseExists($this);
+    }
+
+    /**
+     * Test database connection for this tenant.
+     */
+    public function testConnection(): bool
+    {
+        return app(\App\Services\TenantDatabaseManager::class)->testTenantConnection($this);
+    }
+
+    /**
+     * Create database for this tenant.
+     */
+    public function createDatabase(): bool
+    {
+        return app(\App\Services\TenantDatabaseManager::class)->createTenantDatabase($this);
+    }
+
+    /**
+     * Drop database for this tenant.
+     */
+    public function dropDatabase(): bool
+    {
+        return app(\App\Services\TenantDatabaseManager::class)->dropTenantDatabase($this);
     }
 
     /**

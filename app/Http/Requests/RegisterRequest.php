@@ -31,9 +31,7 @@ class RegisterRequest extends FormRequest
                 'string',
                 'email',
                 'max:255',
-                Rule::unique('users')->where(function ($query) use ($tenant) {
-                    return $query->where('tenant_id', $tenant?->id);
-                }),
+                Rule::unique('users'),
             ],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['sometimes', 'string', 'in:user,admin,manager'],

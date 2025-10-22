@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Role extends Model
 {
     protected $fillable = [
-        'tenant_id',
         'name',
         'display_name',
         'description',
@@ -21,11 +20,11 @@ class Role extends Model
     ];
 
     /**
-     * Get the tenant that owns the role.
+     * Get the current tenant from the application context.
      */
-    public function tenant(): BelongsTo
+    public function getCurrentTenant(): ?Tenant
     {
-        return $this->belongsTo(Tenant::class);
+        return app('tenant');
     }
 
     /**
@@ -68,17 +67,5 @@ class Role extends Model
         $this->permissions()->detach($permission->id);
     }
 
-    /**
-     * Scope a query to only include roles from the current tenant.
-     */
-    public function scopeForTenant($query, $tenantId = null)
-    {
-        $tenantId = $tenantId ?: app('tenant')?->id;
-        
-        if ($tenantId) {
-            return $query->where('tenant_id', $tenantId);
-        }
-        
-        return $query;
-    }
+
 }

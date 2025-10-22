@@ -21,7 +21,6 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'tenant_id',
         'name',
         'email',
         'password',
@@ -54,11 +53,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the tenant that owns the user.
+     * Get the current tenant from the application context.
      */
-    public function tenant(): BelongsTo
+    public function getCurrentTenant(): ?Tenant
     {
-        return $this->belongsTo(Tenant::class);
+        return app('tenant');
     }
 
     /**
@@ -97,19 +96,7 @@ class User extends Authenticatable
                    ->exists();
     }
 
-    /**
-     * Scope a query to only include users from the current tenant.
-     */
-    public function scopeForTenant($query, $tenantId = null)
-    {
-        $tenantId = $tenantId ?: app('tenant')?->id;
-        
-        if ($tenantId) {
-            return $query->where('tenant_id', $tenantId);
-        }
-        
-        return $query;
-    }
+
 
     /**
      * Check if user is active.

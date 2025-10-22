@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Tenant;
+use App\Services\TenantDatabaseManager;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,11 +25,20 @@ class ResolveTenant
             ], 404);
         }
 
-        // Store tenant in request for later use
-        $request->merge(['tenant' => $tenant]);
-        
-        // Set tenant in app container
-        app()->instance('tenant', $tenant);
+        if (!$tenant->isActive()) {
+            return response()->json(['error' => 'Tenant is inactive'], 403);
+        }
+
+        // Switch to tenant's database
+        try {
+            $databaseManager = app(TenantDatabaseManager::class);
+            $databaseManager->setTenantConnection($tenant);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Unable to connect to tenant database',
+                'message' => $e->getMessage()
+            ], 500);
+        }
 
         return $next($request);
     }

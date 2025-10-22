@@ -27,20 +27,19 @@ class AuthController extends Controller
         }
 
         $user = User::create([
-            'tenant_id' => $tenant->id,
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role ?? 'user',
         ]);
 
-        $token = $user->createToken('api-token', ['tenant:' . $tenant->id])->plainTextToken;
+        $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
             'success' => true,
             'message' => 'User registered successfully',
             'data' => [
-                'user' => $user->load('tenant'),
+                'user' => $user,
                 'token' => $token,
             ],
         ], 201);
@@ -61,7 +60,6 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $request->email)
-                   ->where('tenant_id', $tenant->id)
                    ->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
@@ -83,13 +81,13 @@ class AuthController extends Controller
             $user->tokens()->delete();
         }
 
-        $token = $user->createToken('api-token', ['tenant:' . $tenant->id])->plainTextToken;
+        $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
             'data' => [
-                'user' => $user->load('tenant', 'roles'),
+                'user' => $user->load('roles'),
                 'token' => $token,
             ],
         ]);
@@ -133,7 +131,7 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         // Create new token
-        $token = $user->createToken('api-token', ['tenant:' . $tenant->id])->plainTextToken;
+        $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
             'success' => true,

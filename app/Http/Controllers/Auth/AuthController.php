@@ -26,18 +26,17 @@ class AuthController extends Controller
         }
 
         $user = User::create([
-            'tenant_id' => $tenant->id,
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role ?? 'user',
         ]);
 
-        $token = $user->createToken('auth-token', ['tenant:' . $tenant->id])->plainTextToken;
+        $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
             'message' => 'User registered successfully',
-            'user' => $user->load('tenant'),
+            'user' => $user,
             'token' => $token,
         ], 201);
     }
@@ -54,7 +53,6 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $request->email)
-                   ->where('tenant_id', $tenant->id)
                    ->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
@@ -65,11 +63,11 @@ class AuthController extends Controller
             return response()->json(['error' => 'Account is inactive'], 403);
         }
 
-        $token = $user->createToken('auth-token', ['tenant:' . $tenant->id])->plainTextToken;
+        $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
             'message' => 'Login successful',
-            'user' => $user->load('tenant', 'roles'),
+            'user' => $user->load('roles'),
             'token' => $token,
         ]);
     }
@@ -106,7 +104,7 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         // Create new token
-        $token = $user->createToken('auth-token', ['tenant:' . $tenant->id])->plainTextToken;
+        $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
             'message' => 'Token refreshed successfully',
